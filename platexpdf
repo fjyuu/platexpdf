@@ -1,0 +1,64 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Getopt::Long;
+use Encode;
+use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
+use File::Basename qw/basename/;
+
+my $my_name = basename($0);
+my (@fontmaps, @clean_files, $kanji_opt, $help);
+GetOptions( "fontmap=s" => \@fontmaps,
+            "clean=s"   => \@clean_files,
+            "kanji=s"   => \$kanji_opt,
+            "help"      => \$help );
+
+if ($help) {
+    print <<"EOF";
+Usage: $my_name [options] [--] texfile
+-c, --clean EXTENSION     Set unwanted file extension
+-f, --format FILENEME     Set font map file name [cid-x.map]
+-k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
+EOF
+    exit;
+}
+
+die "Mising TeX file ('$my_name --help' for help)\n" if (@ARGV == 0);
+die "wrong number of arguments ('$my_name --help' for help)\n" unless (@ARGV == 1);
+die "I can't find file '$ARGV[0]'.\n" unless (-e $ARGV[0]);
+
+# コマンド定義
+my $platex_cmd = "platex";
+my @platex_opt = qw( -interaction=nonstopmode -halt-on-error );
+my $dvipdf_cmd = "dvipdfmx";
+my @dvipdf_opt = map {("-f", $_)} @fontmaps;
+
+# 文字コード推測
+if (! $kanji_opt) {
+    my $data = do {
+        open my $fh, "<", $ARGV[0] or die $!;
+        local $/;
+        my $data = <$fh>;
+        close $fh;
+        $data;
+    };
+    my $enc = guess_encoding($data);
+    ref($enc) or die "I cannot guess kanji-code : $enc\n";
+    $kanji_opt = ($enc->name eq "shiftjis") ? "sjis" :
+                 ($enc->name eq "7bit-jis") ? "jis"  :
+                 ($enc->name eq "euc-jp")   ? "euc"  :
+                 ($enc->name eq "ascii")    ? "utf8" : $enc->name;
+}
+
+die "I cannot compile kanji-code '$kanji_opt'.\nPlease choose from (euc|jis|sjis|utf8).\n"
+    unless ($kanji_opt =~ /^(?:euc|jis|sjis|utf8)$/);
+
+push @platex_opt, "-kanji=$kanji_opt";
+
+# コマンド実行
+(my $base_name = $ARGV[0]) =~ s/\.[^.]*$//;
+system($platex_cmd, @platex_opt, $ARGV[0])
+    or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
+
+# 中間ファイル削除
+unlink $_ for (grep -e $_, map("$base_name.$_", @clean_files));
