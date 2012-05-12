@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use Encode;
 use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
 use File::Basename qw/basename/;
 
