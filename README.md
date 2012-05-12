@@ -38,19 +38,23 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
 
 本スクリプトは，いくつかのオプションを指定することができます．
 
-* `--fontmap STRING / -f STRING`
+* `--fontmap FILENAME / -f FILENAME`
 
   フォントマップファイルを指定します．`dvipdfmx`の`-f`オプションに相当
   します．
 
-* `--kanji STRING / -k STRING`
+* `--kanji ENCODING / -k ENCODING`
 
   TeXファイルの文字コードを明示的に指定します．`platex`の`-kanji`オプショ
-  ンに相当します．(STRING=euc|jis|sjis|utf8)
+  ンに相当します．(ENCODING=euc|jis|sjis|utf8)
 
-* `--clean STRING / -c STRING`
+* `--clean EXTENSION / -c EXTENSION`
 
   削除したい中間ファイルの拡張子を指定します．
+
+* `--help / -h`
+
+  ヘルプを表示します．  
 
 `--fontmap`オプションと`--clean`オプションは以下のように複数指定するこ
 とができます．
@@ -65,7 +69,7 @@ Adobe ReaderでPDFファイルを開いている状態でplatexpdfを実行し�
 
 platexpdf実行時にはPDFビューアを閉じるか，ファイルをロックしないような
 PDFビューアを使用するようにしてください．たとえば，Windowsでは，
-[Sumatra PDF][1]というPDFビューアがあります．Linuxでは，evinceを使えば
-大丈夫です．
+[Sumatra PDF][1]というPDFビューアがあります．Linuxでは，evince等を使え
+ば大丈夫です．
 
 [1]:http://blog.kowalczyk.info/software/sumatrapdf/free-pdf-reader.html
