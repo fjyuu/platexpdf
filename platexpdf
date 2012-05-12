@@ -16,13 +16,13 @@ if ($help) {
     print <<"EOF";
 Usage: $my_name [options] [--] texfile
 -c, --clean EXTENSION     Set unwanted file extension
--f, --format FILENEME     Set font map file name [cid-x.map]
+-f, --fontmap FILENAME    Set font map file name [cid-x.map]
 -k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
 EOF
     exit;
 }
 
-die "Mising TeX file ('$my_name --help' for help)\n" if (@ARGV == 0);
+die "mising TeX file ('$my_name --help' for help)\n" if (@ARGV == 0);
 die "wrong number of arguments ('$my_name --help' for help)\n" unless (@ARGV == 1);
 die "I can't find file '$ARGV[0]'.\n" unless (-e $ARGV[0]);
 
