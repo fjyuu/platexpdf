@@ -34,14 +34,13 @@ my @dvipdf_opt = map {("-f", $_)} @fontmaps;
 
 # 文字コード推測
 if (! $kanji_opt) {
-    my $data = do {
+    my $enc = guess_encoding( do {
         open my $fh, "<", $ARGV[0] or die $!;
         local $/;
         my $data = <$fh>;
         close $fh;
         $data;
-    };
-    my $enc = guess_encoding($data);
+    } );
     ref($enc) or die "I cannot guess kanji-code : $enc\n";
     $kanji_opt = ($enc->name eq "shiftjis") ? "sjis" :
                  ($enc->name eq "7bit-jis") ? "jis"  :
