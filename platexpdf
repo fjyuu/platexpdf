@@ -28,7 +28,8 @@ die "I can't find file '$ARGV[0]'.\n" unless (-e $ARGV[0]);
 
 # コマンド定義
 my $platex_cmd = "platex";
-my @platex_opt = qw( -interaction=nonstopmode -halt-on-error -src-specials );
+my @platex_opt = qw( -interaction=nonstopmode -halt-on-error
+                     -src-specials -shell-escape );
 my $dvipdf_cmd = "dvipdfmx";
 my @dvipdf_opt = map {("-f", $_)} @fontmaps;
 
