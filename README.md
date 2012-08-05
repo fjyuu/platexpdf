@@ -48,13 +48,18 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
   TeXファイルの文字コードを明示的に指定します．`platex`の`-kanji`オプショ
   ンに相当します．(ENCODING=euc|jis|sjis|utf8)
 
+* `--papersize PAPERSIZE / -p PAPERSIZE`
+
+  用紙サイズを明示的に指定します．`dvipdfmx`の`-p`オプションに相当しま
+  す．(ex. a4)
+
 * `--clean EXTENSION / -c EXTENSION`
 
   削除したい中間ファイルの拡張子を指定します．
 
 * `--help / -h`
 
-  ヘルプを表示します．  
+  ヘルプを表示します．
 
 `--fontmap`オプションと`--clean`オプションは以下のように複数指定するこ
 とができます．

@@ -6,11 +6,12 @@ use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
 use File::Basename qw/basename/;
 
 my $my_name = basename($0);
-my (@fontmaps, @clean_files, $kanji_opt, $help);
-GetOptions( "fontmap=s" => \@fontmaps,
-            "clean=s"   => \@clean_files,
-            "kanji=s"   => \$kanji_opt,
-            "help"      => \$help );
+my (@fontmaps, @clean_files, $kanji_opt, $psize_opt, $help);
+GetOptions( "fontmap=s"   => \@fontmaps,
+            "clean=s"     => \@clean_files,
+            "kanji=s"     => \$kanji_opt,
+            "papersize=s" => \$psize_opt,
+            "help"        => \$help );
 
 if ($help) {
     print <<"EOF";
@@ -18,6 +19,7 @@ Usage: $my_name [options] [--] texfile
 -c, --clean EXTENSION     Set unwanted file extension
 -f, --fontmap FILENAME    Set font map file name [cid-x.map]
 -k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
+-p, --papersize PAPERSIZE Set papersize [a4]
 EOF
     exit;
 }
@@ -32,6 +34,7 @@ my @platex_opt = qw( -interaction=nonstopmode -halt-on-error
                      -src-specials -shell-escape -file-line-error );
 my $dvipdf_cmd = "dvipdfmx";
 my @dvipdf_opt = map {("-f", $_)} @fontmaps;
+push @dvipdf_opt, "-p", $psize_opt if ($psize_opt);
 
 # 文字コード推測
 if (! $kanji_opt) {
