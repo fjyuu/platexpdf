@@ -6,11 +6,12 @@ use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
 use File::Basename qw/basename/;
 
 my $my_name = basename($0);
-my (@fontmaps, @clean_files, $kanji_opt, $psize_opt, $help);
+my (@fontmaps, @clean_files, $kanji_opt, $psize_opt, $landscape_opt,$help);
 GetOptions( "fontmap=s"   => \@fontmaps,
             "clean=s"     => \@clean_files,
             "kanji=s"     => \$kanji_opt,
             "papersize=s" => \$psize_opt,
+            "landscape"   => \$landscape_opt,
             "help"        => \$help );
 
 if ($help) {
@@ -20,6 +21,7 @@ Usage: $my_name [options] [--] texfile
 -f, --fontmap FILENAME    Set font map file name [cid-x.map]
 -k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
 -p, --papersize PAPERSIZE Set papersize [a4]
+-l, --landscape           Landscape mode
 EOF
     exit;
 }
@@ -35,6 +37,7 @@ my @platex_opt = qw( -interaction=nonstopmode -halt-on-error
 my $dvipdf_cmd = "dvipdfmx";
 my @dvipdf_opt = map {("-f", $_)} @fontmaps;
 push @dvipdf_opt, "-p", $psize_opt if ($psize_opt);
+push @dvipdf_opt, "-l" if ($landscape_opt);
 
 # 文字コード推測
 if (! $kanji_opt) {
