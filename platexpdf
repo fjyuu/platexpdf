@@ -4,11 +4,13 @@ use warnings;
 use Getopt::Long;
 use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
 use File::Basename qw/basename/;
+use File::Find;
 
 my $my_name = basename($0);
-my (@fontmaps, @clean_files, $kanji_opt, $psize_opt, $landscape_opt,$help);
+my (@fontmaps, @clean_files, @delete_files, $kanji_opt, $psize_opt, $landscape_opt,$help);
 GetOptions( "fontmap=s"   => \@fontmaps,
             "clean=s"     => \@clean_files,
+            "delete=s"    => \@delete_files,
             "kanji=s"     => \$kanji_opt,
             "papersize=s" => \$psize_opt,
             "landscape"   => \$landscape_opt,
@@ -17,7 +19,8 @@ GetOptions( "fontmap=s"   => \@fontmaps,
 if ($help) {
     print <<"EOF";
 Usage: $my_name [options] [--] texfile
--c, --clean EXTENSION     Set unwanted file extension
+-c, --clean EXTENSION     Set unwanted file extension [dvi]
+-d, --delete EXTENSION    Set file extension which is deleted before `platex` [xbb]
 -f, --fontmap FILENAME    Set font map file name [cid-x.map]
 -k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
 -p, --papersize PAPERSIZE Set papersize [a4]
@@ -59,6 +62,16 @@ die "I cannot compile kanji-code '$kanji_opt'.\nPlease choose from (euc|jis|sjis
     unless ($kanji_opt =~ /^(?:euc|jis|sjis|utf8)$/);
 
 push @platex_opt, "-kanji=$kanji_opt";
+
+# カレントディレクトリ以下のいらないファイルを前もって削除
+find(sub {
+         for my $extension (@delete_files) {
+             if (/\.$extension$/) {
+                 unlink $_;
+                 print "unlink $_ ( $File::Find::dir )\n";
+             }
+         }
+     }, "./");
 
 # コマンド実行
 (my $base_name = $ARGV[0]) =~ s/\.[^.]*$//;
