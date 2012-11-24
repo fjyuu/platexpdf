@@ -23,8 +23,8 @@ Usage: $my_name [options] [--] texfile
 -d, --delete EXTENSION    Set file extension which is deleted before `platex` [xbb]
 -f, --fontmap FILENAME    Set font map file name [cid-x.map]
 -k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
--p, --papersize PAPERSIZE Set papersize [a4]
 -l, --landscape           Landscape mode
+-p, --papersize PAPERSIZE Set papersize [a4]
 EOF
     exit;
 }
