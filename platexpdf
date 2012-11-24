@@ -66,10 +66,7 @@ push @platex_opt, "-kanji=$kanji_opt";
 # カレントディレクトリ以下のいらないファイルを前もって削除
 find(sub {
          for my $extension (@delete_files) {
-             if (/\.$extension$/) {
-                 unlink $_;
-                 print "unlink $_ ( $File::Find::dir )\n";
-             }
+             unlink $_ if (/\.$extension$/);
          }
      }, "./");
 
