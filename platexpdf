@@ -7,18 +7,21 @@ use File::Basename qw/basename/;
 use File::Find;
 
 my $my_name = basename($0);
-my (@fontmaps, @clean_files, @delete_files, $kanji_opt, $psize_opt, $landscape_opt,$help);
+my (@fontmaps, @clean_files, @delete_files,
+    $kanji_opt, $psize_opt, $landscape_opt, $bibtex_opt, $help);
 GetOptions( "fontmap=s"   => \@fontmaps,
             "clean=s"     => \@clean_files,
             "delete=s"    => \@delete_files,
             "kanji=s"     => \$kanji_opt,
             "papersize=s" => \$psize_opt,
             "landscape"   => \$landscape_opt,
+            "bibtex"      => \$bibtex_opt,
             "help"        => \$help );
 
 if ($help) {
     print <<"EOF";
 Usage: $my_name [options] [--] texfile
+-b, --bibtex              Use bibTeX
 -c, --clean EXTENSION     Set unwanted file extension [dvi]
 -d, --delete EXTENSION    Set file extension which is deleted before `platex` [xbb]
 -f, --fontmap FILENAME    Set font map file name [cid-x.map]
@@ -41,6 +44,7 @@ my $dvipdf_cmd = "dvipdfmx";
 my @dvipdf_opt = map {("-f", $_)} @fontmaps;
 push @dvipdf_opt, "-p", $psize_opt if ($psize_opt);
 push @dvipdf_opt, "-l" if ($landscape_opt);
+my $bibtex_cmd = "pbibtex";
 
 # 文字コード推測
 if (! $kanji_opt) {
@@ -72,6 +76,13 @@ find(sub {
 
 # コマンド実行
 (my $base_name = $ARGV[0]) =~ s/\.[^.]*$//;
+if ($bibtex_opt) {
+    (-f "$base_name.aux")
+        or !system($platex_cmd, @platex_opt, $ARGV[0])
+            or die "cannot create $base_name.aux";
+    !system($bibtex_cmd, "$base_name.aux")
+        or die "cannot create bibTeX files";
+}
 system($platex_cmd, @platex_opt, $ARGV[0])
     or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
 

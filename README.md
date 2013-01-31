@@ -38,6 +38,10 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
 
 本スクリプトは，いくつかのオプションを指定することができます．
 
+* `--bibtex / -b`
+
+  bibTeXを使うときに指定します．
+
 * `--fontmap FILENAME / -f FILENAME`
 
   フォントマップファイルを指定します．`dvipdfmx`の`-f`オプションに相当
