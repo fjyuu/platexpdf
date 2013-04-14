@@ -1,90 +1,86 @@
 #!/usr/bin/env perl
+
+=head1 DESCRIPTION
+
+=head1 SYNOPSIS
+
+ platexpdf [options] [--] texfile
+
+ Options:
+   -b, --bibtex              use bibTeX
+   -c, --clean EXTENSION     set unwanted file extension (e.g. dvi)
+   -d, --delete EXTENSION    set file extension which is deleted before `platex` (e.g. xbb)
+   -f, --fontmap FILENAME    set font map file name (e.g. cid-x.map)
+   -h, --help                show this help message
+   -k, --kanji ENCODING      set Japanese encoding (euc|jis|sjis|utf8)
+   -l, --landscape           landscape mode
+   -p, --papersize PAPERSIZE set papersize (e.g. a4)
+=cut
+
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw/:config posix_default no_ignore_case bundling auto_help/;
+use Pod::Usage qw/pod2usage/;
 use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
-use File::Basename qw/basename/;
 use File::Find;
 
-my $my_name = basename($0);
-my (@fontmaps, @clean_files, @delete_files,
-    $kanji_opt, $psize_opt, $landscape_opt, $bibtex_opt, $help);
-GetOptions( "fontmap=s"   => \@fontmaps,
-            "clean=s"     => \@clean_files,
-            "delete=s"    => \@delete_files,
-            "kanji=s"     => \$kanji_opt,
-            "papersize=s" => \$psize_opt,
-            "landscape"   => \$landscape_opt,
-            "bibtex"      => \$bibtex_opt,
-            "help"        => \$help );
-
-if ($help) {
-    print <<"EOF";
-Usage: $my_name [options] [--] texfile
--b, --bibtex              Use bibTeX
--c, --clean EXTENSION     Set unwanted file extension [dvi]
--d, --delete EXTENSION    Set file extension which is deleted before `platex` [xbb]
--f, --fontmap FILENAME    Set font map file name [cid-x.map]
--k, --kanji ENCODING      Set Japanese encoding (ENCODING=euc|jis|sjis|utf8)
--l, --landscape           Landscape mode
--p, --papersize PAPERSIZE Set papersize [a4]
-EOF
-    exit;
-}
-
-die "mising TeX file ('$my_name --help' for help)\n" if (@ARGV == 0);
-die "wrong number of arguments ('$my_name --help' for help)\n" unless (@ARGV == 1);
-die "I can't find file '$ARGV[0]'.\n" unless (-e $ARGV[0]);
+# 引数処理
+GetOptions(\my %opt, qw/ fontmap|f=s@
+                         clean|c=s@
+                         delete|d=s@
+                         kanji|k=s
+                         papersize|p=s
+                         landscape|l
+                         bibtex|b /) or pod2usage(1);
+pod2usage(1) if (@ARGV != 1);
+die "cannot find file '$ARGV[0]'\n" unless (-e $ARGV[0]);
 
 # コマンド定義
 my $platex_cmd = "platex";
 my @platex_opt = qw( -interaction=nonstopmode -halt-on-error
                      -src-specials -shell-escape -file-line-error );
 my $dvipdf_cmd = "dvipdfmx";
-my @dvipdf_opt = map {("-f", $_)} @fontmaps;
-push @dvipdf_opt, "-p", $psize_opt if ($psize_opt);
-push @dvipdf_opt, "-l" if ($landscape_opt);
+my @dvipdf_opt = map {("-f", $_)} @{$opt{fontmap}};
+push @dvipdf_opt, "-p", $opt{papersize} if ($opt{papersize});
+push @dvipdf_opt, "-l" if ($opt{landscape});
 my $bibtex_cmd = "pbibtex";
 
 # 文字コード推測
-if (! $kanji_opt) {
-    my $enc = guess_encoding( do {
+if (! $opt{kanji}) {
+    my $enc = guess_encoding(do {
         open my $fh, "<", $ARGV[0] or die $!;
         local $/;
-        my $data = <$fh>;
-        close $fh;
-        $data;
-    } );
-    ref($enc) or die "I cannot guess kanji-code : $enc\n";
-    $kanji_opt = ($enc->name eq "shiftjis") ? "sjis" :
-                 ($enc->name eq "7bit-jis") ? "jis"  :
-                 ($enc->name eq "euc-jp")   ? "euc"  :
-                 ($enc->name eq "ascii")    ? "utf8" : $enc->name;
+        <$fh>;
+    });
+    ref($enc) or die "cannot guess kanji-code: $enc";
+    $opt{kanji} = ($enc->name eq "shiftjis") ? "sjis" :
+                  ($enc->name eq "7bit-jis") ? "jis"  :
+                  ($enc->name eq "euc-jp")   ? "euc"  :
+                  ($enc->name eq "ascii")    ? "utf8" : $enc->name;
 }
+die "cannot compile kanji-code '$opt{kanji}'. Please choose from (euc|jis|sjis|utf8)."
+    unless ($opt{kanji} =~ /^(?:euc|jis|sjis|utf8)$/);
 
-die "I cannot compile kanji-code '$kanji_opt'.\nPlease choose from (euc|jis|sjis|utf8).\n"
-    unless ($kanji_opt =~ /^(?:euc|jis|sjis|utf8)$/);
-
-push @platex_opt, "-kanji=$kanji_opt";
+push @platex_opt, "-kanji=$opt{kanji}";
 
 # カレントディレクトリ以下のいらないファイルを前もって削除
 find(sub {
-         for my $extension (@delete_files) {
+         for my $extension (@{$opt{delete}}) {
              unlink $_ if (/\.$extension$/);
          }
-     }, "./");
+     }, "./") if ($opt{delete});
 
 # コマンド実行
 (my $base_name = $ARGV[0]) =~ s/\.[^.]*$//;
-if ($bibtex_opt) {
+if ($opt{bibtex}) {
     (-f "$base_name.aux")
         or !system($platex_cmd, @platex_opt, $ARGV[0])
             or die "cannot create $base_name.aux";
     !system($bibtex_cmd, "$base_name.aux")
         or die "cannot create bibTeX files";
 }
-system($platex_cmd, @platex_opt, $ARGV[0])
-    or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
+!system($platex_cmd, @platex_opt, $ARGV[0])
+    and !system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
 
 # 中間ファイル削除
-unlink $_ for (grep -e $_, map("$base_name.$_", @clean_files));
+unlink $_ for (grep -e $_, map("$base_name.$_", @{$opt{clean}}));
