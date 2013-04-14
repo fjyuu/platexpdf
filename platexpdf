@@ -23,6 +23,7 @@ use Getopt::Long qw/:config posix_default no_ignore_case bundling auto_help/;
 use Pod::Usage qw/pod2usage/;
 use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
 use File::Find;
+use File::Basename qw/basename dirname/;
 
 # 引数処理
 GetOptions(\my %opt, qw/ fontmap|f=s@
@@ -34,6 +35,10 @@ GetOptions(\my %opt, qw/ fontmap|f=s@
                          bibtex|b /) or pod2usage(1);
 pod2usage(1) if (@ARGV != 1);
 die "cannot find file '$ARGV[0]'\n" unless (-e $ARGV[0]);
+
+my $dir = dirname($ARGV[0]);
+my $file = basename($ARGV[0]);
+chdir $dir or die $!;
 
 # コマンド定義
 my $platex_cmd = "platex";
@@ -48,7 +53,7 @@ my $bibtex_cmd = "pbibtex";
 # 文字コード推測
 if (! $opt{kanji}) {
     my $enc = guess_encoding(do {
-        open my $fh, "<", $ARGV[0] or die $!;
+        open my $fh, "<", $file or die $!;
         local $/;
         <$fh>;
     });
@@ -73,15 +78,15 @@ find(sub {
      }, "./") if ($opt{delete});
 
 # コマンド実行
-(my $base_name = $ARGV[0]) =~ s/\.[^.]*$//;
+(my $base_name = $file) =~ s/\.[^.]*$//;
 if ($opt{bibtex}) {
     (-f "$base_name.aux")
-        or !system($platex_cmd, @platex_opt, $ARGV[0])
+        or !system($platex_cmd, @platex_opt, $file)
             or die "cannot create $base_name.aux";
     !system($bibtex_cmd, "$base_name.aux")
         or die "cannot create bibTeX files";
 }
-system($platex_cmd, @platex_opt, $ARGV[0])
+system($platex_cmd, @platex_opt, $file)
     or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
 
 # 中間ファイル削除
