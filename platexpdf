@@ -81,8 +81,8 @@ if ($opt{bibtex}) {
     !system($bibtex_cmd, "$base_name.aux")
         or die "cannot create bibTeX files";
 }
-!system($platex_cmd, @platex_opt, $ARGV[0])
-    and !system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
+system($platex_cmd, @platex_opt, $ARGV[0])
+    or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
 
 # 中間ファイル削除
 unlink $_ for (grep -e $_, map("$base_name.$_", @{$opt{clean}}));
