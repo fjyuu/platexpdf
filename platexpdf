@@ -60,6 +60,8 @@ if (! $opt{kanji}) {
 }
 die "cannot compile kanji-code '$opt{kanji}'. Please choose from (euc|jis|sjis|utf8)."
     unless ($opt{kanji} =~ /^(?:euc|jis|sjis|utf8)$/);
+die "your `$platex_cmd` does not support utf8 encoding\n"
+    if ($opt{kanji} eq "utf8" && ! &utf8_ok);
 
 push @platex_opt, "-kanji=$opt{kanji}";
 
@@ -84,3 +86,8 @@ if ($opt{bibtex}) {
 
 # 中間ファイル削除
 unlink $_ for (grep -e $_, map("$base_name.$_", @{$opt{clean}}));
+
+sub utf8_ok {
+    my $platex_help = `$platex_cmd --help`;
+    $platex_help =~ /set Japanese encoding \(STRING=euc\|jis\|sjis\|utf8\)/;
+}
