@@ -58,7 +58,7 @@ if (! $opt{kanji}) {
                   ($enc->name eq "euc-jp")   ? "euc"  :
                   ($enc->name eq "ascii")    ? "utf8" : $enc->name;
 }
-die "cannot compile kanji-code '$opt{kanji}'. Please choose from (euc|jis|sjis|utf8)."
+die "cannot compile kanji-code '$opt{kanji}'. choose from (euc|jis|sjis|utf8)"
     unless ($opt{kanji} =~ /^(?:euc|jis|sjis|utf8)$/);
 die "your `$platex_cmd` does not support utf8 encoding\n"
     if ($opt{kanji} eq "utf8" && ! &utf8_ok);
