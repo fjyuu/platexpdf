@@ -8,6 +8,7 @@
 
  Options:
    -b, --bibtex              use bibTeX
+       --no-bibtex           does not use bibTeX
    -c, --clean EXTENSION     set unwanted file extension (e.g. dvi)
    -d, --delete EXTENSION    set file extension which is deleted before `platex` (e.g. xbb)
    -f, --fontmap FILENAME    set font map file name (e.g. cid-x.map)
@@ -32,7 +33,8 @@ GetOptions(\my %opt, qw/ fontmap|f=s@
                          kanji|k=s
                          papersize|p=s
                          landscape|l
-                         bibtex|b /) or pod2usage(1);
+                         bibtex|b
+                         no-bibtex /) or pod2usage(1);
 pod2usage(1) if (@ARGV != 1);
 die "cannot find file '$ARGV[0]'\n" unless (-e $ARGV[0]);
 
@@ -79,7 +81,7 @@ find(sub {
 
 # コマンド実行
 (my $base_name = $file) =~ s/\.[^.]*$//;
-if ($opt{bibtex}) {
+if ($opt{bibtex} || &auto_bibtex_mode) {
     (-f "$base_name.aux")
         or !system($platex_cmd, @platex_opt, $file)
             or die "cannot create $base_name.aux";
@@ -95,4 +97,8 @@ unlink $_ for (grep -e $_, map("$base_name.$_", @{$opt{clean}}));
 sub utf8_ok {
     my $platex_help = `$platex_cmd --help`;
     $platex_help =~ /set Japanese encoding \(STRING=euc\|jis\|sjis\|utf8\)/;
+}
+
+sub auto_bibtex_mode {
+    ! $opt{bibtex} && ! $opt{"no-bibtex"} && glob "*.bib";
 }

@@ -40,7 +40,9 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
 
 * `--bibtex / -b`
 
-  bibTeXを使うときに指定します．
+  bibTeXを使うときに指定します．このオプションを指定しない場合でも，
+  `*.bib`ファイルがあるときには自動的にこのオプションが有効になります．
+  この動作を抑制するときには，`--no-bibtex`オプションを使用してください．
 
 * `--fontmap FILENAME / -f FILENAME`
 
