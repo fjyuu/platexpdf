@@ -16,6 +16,7 @@
    -k, --kanji ENCODING      set Japanese encoding (euc|jis|sjis|utf8)
    -l, --landscape           landscape mode
    -p, --papersize PAPERSIZE set papersize (e.g. a4)
+   -w, --watch FILE          set watched file
 =cut
 
 use strict;
@@ -30,6 +31,7 @@ use File::Basename qw/basename dirname/;
 GetOptions(\my %opt, qw/ fontmap|f=s@
                          clean|c=s@
                          delete|d=s@
+                         watch|w:s@
                          kanji|k=s
                          papersize|p=s
                          landscape|l
@@ -72,27 +74,43 @@ die "your `$platex_cmd` does not support utf8 encoding\n"
 
 push @platex_opt, "-kanji=$opt{kanji}";
 
-# カレントディレクトリ以下のいらないファイルを前もって削除
-find(sub {
-         for my $extension (@{$opt{delete}}) {
-             unlink $_ if (/\.$extension$/);
-         }
-     }, "./") if ($opt{delete});
+&platexpdf;
 
-# コマンド実行
-(my $base_name = $file) =~ s/\.[^.]*$//;
-if ($opt{bibtex} || &auto_bibtex_mode) {
-    (-f "$base_name.aux")
-        or !system($platex_cmd, @platex_opt, $file)
-            or die "cannot create $base_name.aux";
-    !system($bibtex_cmd, "$base_name.aux")
-        or die "cannot create bibTeX files";
+if ($opt{watch}) {
+    eval {require Filesys::Notify::Simple; 1}
+        or die "Filesys::Notify::Simple is required to watch changes of files";
+
+    my @paths = map {$_ or $file} @{$opt{watch}};
+    warn sprintf "Start watching %s\n", join ',', @paths;
+    while (1) {
+        my $watcher = Filesys::Notify::Simple->new(\@paths);
+        $watcher->wait(\&platexpdf); # block
+    }
 }
-system($platex_cmd, @platex_opt, $file)
-    or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
 
-# 中間ファイル削除
-unlink $_ for (grep -e $_, map("$base_name.$_", @{$opt{clean}}));
+sub platexpdf {
+    # カレントディレクトリ以下のいらないファイルを前もって削除
+    find(sub {
+             for my $extension (@{$opt{delete}}) {
+                 unlink $_ if (/\.$extension$/);
+             }
+         }, "./") if ($opt{delete});
+
+    # コマンド実行
+    (my $base_name = $file) =~ s/\.[^.]*$//;
+    if ($opt{bibtex} || &auto_bibtex_mode) {
+        (-f "$base_name.aux")
+            or !system($platex_cmd, @platex_opt, $file)
+                or die "cannot create $base_name.aux";
+        !system($bibtex_cmd, "$base_name.aux")
+            or die "cannot create bibTeX files";
+    }
+    system($platex_cmd, @platex_opt, $file)
+        or system($dvipdf_cmd, @dvipdf_opt, "$base_name.dvi");
+
+    # 中間ファイル削除
+    unlink $_ for (grep -e $_, map("$base_name.$_", @{$opt{clean}}));
+}
 
 sub utf8_ok {
     my $platex_help = `$platex_cmd --help`;
