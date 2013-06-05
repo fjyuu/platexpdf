@@ -42,49 +42,52 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
 
   bibTeXを使うときに指定します．
 
+* `--clean EXTENSION / -c EXTENSION`
+
+  削除したい中間ファイルの拡張子を指定します．
+
 * `--fontmap FILENAME / -f FILENAME`
 
   フォントマップファイルを指定します．`dvipdfmx`の`-f`オプションに相当
   します．
+
+* `--help / -h`
+
+  ヘルプを表示します．
 
 * `--kanji ENCODING / -k ENCODING`
 
   TeXファイルの文字コードを明示的に指定します．`platex`の`-kanji`オプショ
   ンに相当します．(ENCODING=euc|jis|sjis|utf8)
 
+* `--landscape / -l`
+
+  横書きモードでPDFを出力します．`dvipdfmx`の`-l`オプションに相当します．
+
 * `--papersize PAPERSIZE / -p PAPERSIZE`
 
   用紙サイズを明示的に指定します．`dvipdfmx`の`-p`オプションに相当しま
-  す．(ex. a4)
+  す．(e.g. a4)
 
 * `--watch FILE / -w FILE`
 
   変更を監視するファイルを指定します．FILEを省略した場合は，コンパイル
   対象のTeXファイルを監視します．このオプションを指定すると，ファイルを
-  監視し，ファイルの変更されるとplatexpdfコマンドを実行します．この機能
-  は，
+  監視し，ファイルが変更されればコンパイルを実行します．このオプション
+  を使う場合は，追加モジュールとして
   [Filesys::Notify::Simple](http://search.cpan.org/perldoc?Filesys%3A%3ANotify%3A%3ASimple)
-  に依存しています．このオプションを使いたい場合はこのモジュールをイン
-  ストールする必要があります．Filesys::Notify::Simpleは，プラットフォー
-  ムごとに
-  [Linux::Inotify2](http://search.cpan.org/perldoc?Linux%3A%3AInotify2)
-  ，[Mac::FSEvents](http://search.cpan.org/perldoc?Mac%3A%3AFSEvents)，
-  [Filesys::Notify::KQueue](http://search.cpan.org/perldoc?Filesys%3A%3ANotify%3A%3AKQueue)
-  を使い分けます．これらのモジュールをインストールすることで，ファイル
-  の監視がより効率的に行えるようになります．
+  が必要です．さらに，Filesys::Notify::Simpleは，プラットフォームごとに
+  [Linux::Inotify2](http://search.cpan.org/perldoc?Linux%3A%3AInotify2)，
+  [Mac::FSEvents](http://search.cpan.org/perldoc?Mac%3A%3AFSEvents)，
+  [Filesys::Notify::KQueue](http://search.cpan.org/perldoc?Filesys%3A%3ANotify%3A%3AKQueue)，
+  [Win32::ChangeNotify](http://search.cpan.org/perldoc?Win32%3A%3AChangeNotify)
+  を使い分けます．プラットフォームに合ったモジュールをインストールする
+  ことで，ファイルの監視を効率的に行えるようになります．
 
-* `--clean EXTENSION / -c EXTENSION`
+`--clean`オプション，`--fontmap`オプション，`--watch`オプションは以下の
+ように複数指定することができます．
 
-  削除したい中間ファイルの拡張子を指定します．
-
-* `--help / -h`
-
-  ヘルプを表示します．
-
-`--fontmap`オプションと`--clean`オプションは以下のように複数指定するこ
-とができます．
-
-    platexpdf --clean log --clean dvi hoge.tex
+    platexpdf --watch piyo.tex --watch hoge.tex --clean log --clean dvi hoge.tex
 
 ## 注意 ##
 
