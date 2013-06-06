@@ -2,6 +2,21 @@
 
 platex して dvipdfmx するスクリプト
 
+## 概要 ##
+
+本スクリプトはTeXファイルを引数にとりPDFファイルを作成するPerlスクリプ
+トです．内部では，`platex`コマンド，`dvipdfmx`コマンドを使っています．
+つまり，
+
+    platexpdf hoge.tex
+
+は，
+
+    platex hoge.tex
+    dvipdfmx hoge.dvi
+
+とふたつのコマンドを実行することにほぼ等しいです．
+
 ## 使い方 ##
 
 Perlが動作する環境で本スクリプトをPATHの通ったところに置くと以下のよう
@@ -12,27 +27,28 @@ Perlが動作する環境で本スクリプトをPATHの通ったところに置
 `hoge.tex`を引数にとり，DVIファイル及びPDFファイルを一度に作成していま
 す．
 
+文字コードを明示的に指定したり，埋め込みたいフォントのフォントマップを
+指定することができます．
+
+    platexpdf -k utf8 -f cid-x.map hoge.tex
+
+また，ファイルの変更を監視して，変更されたときに自動でコンパイルを実行
+することもできます．この機能を使うには
+[Filesys::Notify::Simple](http://search.cpan.org/perldoc?Filesys%3A%3ANotify%3A%3ASimple)
+モジュールが必要です．
+
+    # hoge.texが修正されたときに自動でコンパイル
+    platexpdf -w -- hoge.tex
+
+    # hoge.texもしくはpiyo.texが修正されたときに自動でhoge.texをコンパイル
+    platexpdf -w hoge.tex -w piyo.tex hoge.tex
+
 Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
 いる場合は，コマンドラインから
 
     pl2bat platexpdf
 
 で，`platexpdf.bat`を作成して，それをPATHの通ったところに置いてください．
-
-## 詳細 ##
-
-本スクリプトはTeXファイルを引数にとりPDFファイルを作成するスクリプトで
-す．内部では，`platex`コマンド，`dvipdfmx`コマンドを使っています．つま
-り，
-
-    platexpdf hoge.tex
-
-は，
-
-    platex hoge.tex
-    dvipdfmx hoge.dvi
-
-とふたつのコマンドを実行することにほぼ等しいです．
 
 ## オプション ##
 
@@ -62,7 +78,7 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
 
 * `--landscape / -l`
 
-  横書きモードでPDFを出力します．`dvipdfmx`の`-l`オプションに相当します．
+  用紙を横に使うモードでPDFを出力します．`dvipdfmx`の`-l`オプションに相当します．
 
 * `--papersize PAPERSIZE / -p PAPERSIZE`
 
@@ -76,7 +92,9 @@ Windowsで[ActivePerl](http://www.activestate.com/activeperl)を使用して
   監視し，ファイルが変更されればコンパイルを実行します．このオプション
   を使う場合は，追加モジュールとして
   [Filesys::Notify::Simple](http://search.cpan.org/perldoc?Filesys%3A%3ANotify%3A%3ASimple)
-  が必要です．さらに，Filesys::Notify::Simpleは，プラットフォームごとに
+  が必要です．
+
+  Filesys::Notify::Simpleは，プラットフォームごとに
   [Linux::Inotify2](http://search.cpan.org/perldoc?Linux%3A%3AInotify2)，
   [Mac::FSEvents](http://search.cpan.org/perldoc?Mac%3A%3AFSEvents)，
   [Filesys::Notify::KQueue](http://search.cpan.org/perldoc?Filesys%3A%3ANotify%3A%3AKQueue)，
