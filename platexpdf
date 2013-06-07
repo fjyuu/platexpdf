@@ -79,6 +79,9 @@ if ($opt{watch}) {
         or die "Filesys::Notify::Simple is required to watch changes of files";
 
     my @paths = map {$_ or $file} @{$opt{watch}};
+    if ($^O eq "darwin" && grep {-f $_} @paths) {
+        $ENV{PERL_FNS_NO_OPT} = 1; # Mac::FSEventsではファイル監視ができないから
+    }
     warn sprintf "Start watching %s\n", join ',', @paths;
     while (1) {
         my $watcher = Filesys::Notify::Simple->new(\@paths);
