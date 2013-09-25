@@ -119,3 +119,7 @@ PDFビューアを使用するようにしてください．たとえば，Windo
 ば大丈夫です．
 
 [1]:http://blog.kowalczyk.info/software/sumatrapdf/free-pdf-reader.html
+
+## ライセンス ##
+
+MITライセンスです．
