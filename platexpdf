@@ -1,6 +1,12 @@
 #!/usr/bin/env perl
 
+=head1 NAME
+
+ platexpdf
+
 =head1 DESCRIPTION
+
+ This script executes `platex` and `dvipdfmx`.
 
 =head1 SYNOPSIS
 
